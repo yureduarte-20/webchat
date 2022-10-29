@@ -88,11 +88,19 @@
 
         socket.on('chat message', function (msg) {
             var item = document.createElement('li');
-            var username = document.createElement('span');
+            var _username = document.createElement('span');
             var message = document.createElement('span');
             message.textContent = msg.message;
-            username.textContent = msg.username + ': '
-            item.appendChild(username)
+            _username.textContent = msg.username + ': '
+            console.log(_username.textContent ,username )
+            if(_username.textContent.split(':')[0] == username){
+                item.style = "display:flex; justify-content:end; flex-direction:row;"
+                item.appendChild(message)
+                messages.appendChild(item);
+                window.scrollTo(0, document.body.scrollHeight);
+                return;
+            }
+            item.appendChild(_username)
             item.appendChild(message)
             messages.appendChild(item);
             window.scrollTo(0, document.body.scrollHeight);
