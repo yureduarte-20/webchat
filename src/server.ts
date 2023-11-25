@@ -1,29 +1,31 @@
 import express from 'express';
 import http from 'http'
+import "reflect-metadata"
 import cors from 'cors'
 import { Server, Socket } from 'socket.io'
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-const app = express();
-const port = 3000;
+export const app = express();
+
 const server = http.createServer(app);
 app.use(cors({ origin:'*' }));
-const io = new Server(server, { cors: { origin: '*' } });
+
+export const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(express.static('public'));
 let connections: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>[] = []
 
-server.listen(port, () => {
-    console.log('Socker listen on ' + port);
-})
-app.get('/users', (req, res) =>{
+
+/* app.get('/users', (req, res) =>{
     const users = connections.map( socket => {
         return socket.data.username;
     })
     return res.json({ users })
-})
-io.on('connection', (socket) => {
+}) */
+
+/* io.on('connection', (socket) => {
     
     connections.push(socket)
+    console.log('cc')
     socket.on("disconnect", () => {
         connections = connections.filter(s => s.id != socket.id)
         io.emit("user left", { message:`${socket.data.username} se desconectou`, username:socket.data.username })
@@ -42,4 +44,8 @@ io.on('connection', (socket) => {
             return _socket
         })
     })
-});
+}); */
+export const startServer = (port:number, callback?:() =>void) => server.listen(port, () => {
+    console.log('Socker listen on ' + port);
+    callback && callback()
+})
