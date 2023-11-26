@@ -12,9 +12,9 @@ export class Container {
         }
     }
 
-    static get(key: string) {
+    static get<T>(key: string) {
         if(!Container.registry.has(key)) throw new Error(`Dependency with key ${key} not injected`)
-        return Container.registry.get(key)
+        return Container.registry.get(key) as T
     }
     static getRegistredDepenciesName(){
         return Array.from(Container.registry.keys())

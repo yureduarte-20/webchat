@@ -4,8 +4,12 @@ import { User } from "./entity/User"
 import { entitiesArray } from "./entity"
 
 export const AppDataSource = new DataSource({
-    type: "mongodb",
-    url:"mongodb://user:12345678@localhost:27017/?authMechanism=DEFAULT" ,
+    type: "mysql",
+    host: 'localhost',
+    port: 3306 ,
+    username: 'root',
+    password:'password',
+    database: 'chat',
     synchronize: true,
     logging: false,
     entities: entitiesArray,

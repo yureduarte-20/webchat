@@ -1,10 +1,11 @@
-import { Entity, ObjectIdColumn, ObjectId, Column } from "typeorm"
+
+import { Entity, ObjectIdColumn, Column,ObjectId, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity()
 export class User {
 
-    @ObjectIdColumn()
-    id: ObjectId
+    @PrimaryGeneratedColumn()
+    id: number
 
     @Column()
     firstName: string
@@ -16,5 +17,7 @@ export class User {
     age: number
     @Column({ unique: true})
     email: string
+    @Column({ select: false, nullable: false })
+    password:string;
 
 }
