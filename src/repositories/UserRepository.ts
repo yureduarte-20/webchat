@@ -1,12 +1,21 @@
-import { ObjectId, EntityManager, FindOperator, FindOneOptions,  } from "typeorm";
+import { ObjectId, EntityManager, FindOperator, FindOneOptions, MongoRepository, MongoEntityManager,  } from "typeorm";
 import { User } from "../entity";
 import DefaultRepository from "./DefaultRepository";
+import { Container, inject, injectionTarget } from "../core/DI";
 
-export default class UserRepository implements DefaultRepository<User, ObjectId>{
+import { AppDataSource } from "../data-source";
+import { ENTITY_MANAGER_BINDING_KEY } from "../core/binding-keys";
+
+
+
+@injectionTarget()
+export class UserRepository implements DefaultRepository<User, ObjectId>{
+    static repositoryName: "UserRepository"
     constructor(
-        private entityManager: EntityManager
+        @inject(ENTITY_MANAGER_BINDING_KEY)
+        private entityManager?: MongoEntityManager
     ){
-        
+
     }
     async exists(operator:FindOneOptions<User>): Promise<boolean> {
         const user =  await this.entityManager.findOne(User, operator)
@@ -23,7 +32,7 @@ export default class UserRepository implements DefaultRepository<User, ObjectId>
         return;
     }
     deleteById(id: ObjectId): Promise<void> {
-        this.entityManager.delete(User, { id })
+        this.entityManager.delete(User, id)
         return;
     }
 

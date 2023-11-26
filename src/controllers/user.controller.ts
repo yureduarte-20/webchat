@@ -2,11 +2,17 @@ import { Request, Response, Router } from "express";
 import DefaultRepository from "../repositories/DefaultRepository";
 import { ObjectId } from "typeorm";
 import { User } from "../entity";
+import { inject, injectionTarget } from "../core/DI";
+import { UserRepository } from "../repositories";
+import { EXPRESS_ROUTER_BINDING_KEY } from "../core/binding-keys";
 
-export class UsersController {
+@injectionTarget()
+export class UserController {
     constructor(
-        private router: Router,
-        private userRepository:DefaultRepository<User, ObjectId>
+        @inject(EXPRESS_ROUTER_BINDING_KEY)
+        private router?: Router,
+        @inject("UserRepository")
+        private userRepository?:DefaultRepository<User, ObjectId>,
     ){
         this.router.post("/users", (req,res) => this.create(req, res))
         this.router.get("/users/:id", (req, res) => this.findById(req, res))

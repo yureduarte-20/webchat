@@ -1,3 +1,5 @@
+import { AppDataSource } from "../data-source"
+
 export default interface DefaultRepository<T, I> {
     save(data: T):Promise<T>
     findById(id: I): Promise<T>;

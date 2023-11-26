@@ -1,6 +1,6 @@
-import express from 'express';
+import express, { json } from 'express';
 import http from 'http'
-import "reflect-metadata"
+
 import cors from 'cors'
 import { Server, Socket } from 'socket.io'
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
@@ -11,11 +11,11 @@ app.use(cors({ origin:'*' }));
 
 export const io = new Server(server, { cors: { origin: '*' } });
 
+app.use(json())
 app.use(express.static('public'));
+/* 
 let connections: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>[] = []
-
-
-/* app.get('/users', (req, res) =>{
+app.get('/users', (req, res) =>{
     const users = connections.map( socket => {
         return socket.data.username;
     })

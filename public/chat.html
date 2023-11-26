@@ -114,7 +114,7 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             if (input.value) {
-                socket.emit('chat message', { username: username, message: input.value });
+                socket.emit('chat message', { username: username, message: input.value, messageId: Math.floor(Math.random() * 10000000) });
                 input.value = '';
             }
         });
@@ -140,10 +140,11 @@
         })
 
         socket.on('chat message', function (msg) {
+            let messageContent = msg[msg.length - 1]
             var item = document.createElement('li');
             var _username = document.createElement('span');
             var message = document.createElement('span');
-            message.textContent = msg.message;
+            message.textContent = messageContent.message;
             _username.textContent = msg.username + ': '
             if (msg.socketId == socketId) {
                 item.style = "display:flex; justify-content:end; flex-direction:row;"
