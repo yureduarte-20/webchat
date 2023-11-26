@@ -12,9 +12,7 @@ export class User {
 
     @Column()
     lastName: string
-
-    @Column()
-    age: number
+    
     @Column({ unique: true})
     email: string
     @Column({ select: false, nullable: false })

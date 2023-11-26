@@ -21,7 +21,7 @@ const run = async () =>{
     Container.register(SOCKET_IO_BINDING_KEY, io);
     Container.register(HASH_SERVICE_BINDING_KEY, new BcryptHashService())
     // Repositorios
-    Container.register(UserRepository.repositoryName, new UserRepository())
+    Container.register('UserRepository', new UserRepository())
 
     Container.register('controllers.UserController', new UserController());
     Container.register('controllers.ChatController', new ChatController());

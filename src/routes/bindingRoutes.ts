@@ -12,4 +12,5 @@ export function bindRoutes() {
 function bindUserController(router: Router, c: UserController) {
     router.post("/users", (req, res) => c.create(req, res))
     router.get("/users/:id", (req, res) => c.findById(req, res))
+    router.post("/login", (req,res) => c.login(req, res))
 }

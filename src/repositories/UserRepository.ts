@@ -19,8 +19,7 @@ export class UserRepository extends DefaultRepository<User, number>{
         super();
     }
     async exists(operator:FindOneOptions<User>): Promise<boolean> {
-        const user =  await this.entityManager.findOne(User, operator)
-        return user !== null;
+        return this.entityManager.getRepository(User).exist(operator)
     }
     findById(id: number): Promise<User> {
         return this.entityManager.getRepository(User).findOneOrFail({

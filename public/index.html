@@ -12,19 +12,27 @@
 
 <body>
     <div class="container ">
+        <div class="alert alert-danger d-none" role="alert">
+            A simple danger alert—check it out!
+        </div>
         <div class="row justify-content-center align-items-center min-vh-100">
             <div class="col-4">
                 <div class="card">
                     <div class="card-body">
-                        <form class="form_login">
+                        <form class="form_login mb-3">
                             <h5 class="card-title">Login</h5>
-                            <p class="card-text">Entre com um número de usuário para entrar na conversa.</p>
+                            <p class="card-text">Entre com o email para entrar na conversa.</p>
                             <div class="input-group mb-3">
-                                <input class="form-control" name="username" id="username"
-                                    placeholder="Nome de usuário..." />
-                                <button class="btn btn-primary">Entrar</button>
+                                <input class="form-control" name="email" id="username" placeholder="Email..." />
                             </div>
+                            <div class="input-group mb-1">
+                                <input class="form-control" name="password" id="password" placeholder="Senha..." />
+                            </div>
+                            <button class="btn btn-primary">Entrar</button>
                         </form>
+                        <div class="card-footer">
+                            <span>Não possui um cadastro? então clique <a href="./user/create.html">aqui.</a></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -33,13 +41,37 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
+    <script src="./lib/jquery.js"></script>
+    <script src="./lib/alerts.js"></script>
     <script>
         const form = document.querySelector('.form_login');
         const input = document.querySelector('#username')
+        const password = document.querySelector('#password')
         form.addEventListener('submit', e => {
             e.preventDefault();
-            console.log(input.value)
-            window.location.href = `/chat.html?username=${input.value}` 
+            let hostname = window.location.hostname.includes('localhost') ? 'http://127.0.0.1:3000' : window.location.hostname
+            
+            const headers = new Headers()
+            headers.append('Content-Type', 'application/json')
+            headers.append('Accept', 'application/json')
+            fetch(hostname + "/login", {
+                body: JSON.stringify({ email: input.value, password: password.value }),
+                method: 'POST',
+                headers,
+
+            }).then(response => response.status < 300 ? response.json() : Promise.reject(response))
+                .then(data => {
+                    window.localStorage.setItem('access_token', data.token)
+                    window.location.href = `/chat.html?username=${input.value}`
+                })
+                .catch(async e => {
+                    if (e.status && e.status >= 400 && e.status < 500) {
+                        const d = await e.json()
+                        console.log(d)
+                        return errorMessage(d.message)
+                    }
+                    return errorMessage('Não foi possível se autenticar')
+                })
         })
     </script>
 </body>

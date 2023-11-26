@@ -3,6 +3,7 @@ export class Container {
     private static registry: Map<string, any> = new Map();
 
     static register(key: string, instance: any) {
+        if(!key) throw new Error('Key is not valid')
         //console.log(key, instance)
         if (!Container.registry.has(key)) {
             Container.registry.set(key, instance);
@@ -13,6 +14,7 @@ export class Container {
     }
 
     static get<T>(key: string) {
+        if(!key) throw new Error('Key is not valid')
         if(!Container.registry.has(key)) throw new Error(`Dependency with key ${key} not injected`)
         return Container.registry.get(key) as T
     }
