@@ -32,7 +32,7 @@ export function injectionTarget() {
     return function injectionTarget<T extends { new(...args: any[]): {} }>(constructor: T): T | void {
         return class extends constructor {
             constructor(...args: any[]) {
-                console.log(constructor)
+
                 const injections = (constructor as any).injections as Injection[]
 
                 const injectedArgs: any[] = injections.sort(({ index }, { index:n_index}) => index - n_index ).map(({ key }) => {

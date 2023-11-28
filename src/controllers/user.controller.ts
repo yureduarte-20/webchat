@@ -10,6 +10,7 @@ import { ObjectId } from "mongodb";
 import { AppDataSource } from "../data-source";
 import { randomBytes } from "crypto";
 import { JWTService } from "../services/JWTService";
+import { RequestUserProfile } from "../middlewares/auth.middleware";
 
 @injectionTarget()
 export class UserController {
@@ -47,6 +48,11 @@ export class UserController {
             console.log(e)
             return response.status(404).json({ message: 'usuário não encontrado' })
         }
+    }
+
+    async profile(request: RequestUserProfile, response:Response){
+        const profile = await this.userRepository.findById(request.user.id);
+        return response.json(profile)
     }
     async login(req: Request, response: Response) {
         const { email, password } = req.body
