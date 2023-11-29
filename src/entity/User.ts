@@ -1,5 +1,5 @@
 
-import { Entity, ObjectIdColumn, Column,ObjectId, PrimaryGeneratedColumn } from "typeorm"
+import { Entity, CreateDateColumn, UpdateDateColumn, Column, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity()
 export class User {
@@ -12,10 +12,13 @@ export class User {
 
     @Column()
     lastName: string
-    
-    @Column({ unique: true})
+
+    @Column({ unique: true })
     email: string
     @Column({ select: false, nullable: false })
-    password:string;
-
+    password: string;
+    @CreateDateColumn({ name: 'created_at', type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+    createdAt: Date;
+    @UpdateDateColumn({ name: 'updated_at', type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
+    updatedAt: Date;
 }

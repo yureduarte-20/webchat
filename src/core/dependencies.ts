@@ -13,6 +13,7 @@ import { bindRoutes } from "../routes/bindingRoutes";
 import { BcryptHashService } from "../services/Bcrypt";
 import { JWTService } from "../services/JWTService";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
+import ContactRepository from "../repositories/ContactsRepository";
 const eventManager = EventManager.getInstance()
 
 // repository
@@ -29,6 +30,7 @@ const run = async () =>{
     Container.register(AUTH_MIDDLEWARE_BINDING_KEY, new AuthMiddleware())
     // Repositorios
     Container.register('UserRepository', new UserRepository())
+    Container.register('ContactRepository', new ContactRepository())
     Container.register('controllers.UserController', new UserController());
     Container.register('controllers.ChatController', new ChatController());
     // Associar as rotas

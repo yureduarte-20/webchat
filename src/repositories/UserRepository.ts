@@ -1,4 +1,4 @@
-import { EntityManager, FindOperator, FindOneOptions, MongoRepository, MongoEntityManager,  } from "typeorm";
+import { EntityManager, FindOperator, FindOneOptions, MongoRepository, MongoEntityManager, EntityNotFoundError, } from "typeorm";
 import { User } from "../entity";
 import DefaultRepository from "./DefaultRepository";
 import { Container, inject, injectionTarget } from "../core/DI";
@@ -7,26 +7,51 @@ import { AppDataSource } from "../data-source";
 import { ENTITY_MANAGER_BINDING_KEY } from "../core/binding-keys";
 import { ObjectId } from "mongodb";
 
-
+export class UserNotFoundError extends Error {
+    constructor(msg?: string) {
+        super(msg ?? "Usuário não encontrado")
+    }
+}
 
 @injectionTarget()
-export class UserRepository extends DefaultRepository<User, number>{
+export class UserRepository implements DefaultRepository<User, number>{
     static repositoryName: "UserRepository"
     constructor(
         @inject(ENTITY_MANAGER_BINDING_KEY)
         private entityManager?: MongoEntityManager
-    ){
-        super();
+    ) {
+
     }
-    async exists(operator:FindOneOptions<User>): Promise<boolean> {
+    findOneOrFail(criteria: any): Promise<User> {
+        try {
+            return this.entityManager.getRepository(User).findOneOrFail(criteria)
+        } catch (e) {
+            if (e instanceof EntityNotFoundError) {
+                throw new UserNotFoundError()
+            }
+            throw e;
+        }
+    }
+    findOne(criteria: any): Promise<User> {
+        return this.entityManager.getRepository(User).findOne(criteria)
+    }
+    async exists(operator: FindOneOptions<User>): Promise<boolean> {
         return this.entityManager.getRepository(User).exist(operator)
     }
     findById(id: number): Promise<User> {
-        return this.entityManager.getRepository(User).findOneOrFail({
-            where:{
-                id: id
+        try {
+
+            return this.entityManager.getRepository(User).findOneOrFail({
+                where: {
+                    id: id
+                }
+            })
+        } catch (e) {
+            if (e instanceof EntityNotFoundError) {
+                throw new UserNotFoundError()
             }
-        })
+            throw e
+        }
     }
     find(filter: any): Promise<User[]> {
         return this.entityManager.find(User, filter)
@@ -43,6 +68,6 @@ export class UserRepository extends DefaultRepository<User, number>{
     async save(data: User): Promise<User> {
         return this.entityManager.save<User>(data)
     }
-    
-    
+
+
 }
