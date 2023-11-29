@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import Connection from '../components/ConnectionManager.vue'
-import State from '../components/ConnectionState.vue'
+
 </script>
 <template>
   <div class="container">
-    <Connection />
-    <State />
-<h3 class=" text-center">Messaging</h3>
-<div class="messaging">
+    <h3 class=" text-center">Messaging</h3>
+    <div class="messaging">
       <div class="inbox_msg">
         <div class="inbox_people">
           <div class="headind_srch">
@@ -16,10 +13,11 @@ import State from '../components/ConnectionState.vue'
             </div>
             <div class="srch_bar">
               <div class="stylish-input-group">
-                <input type="text" class="search-bar"  placeholder="Search" >
+                <input type="text" class="search-bar" placeholder="Search">
                 <span class="input-group-addon">
-                <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
-                </span> </div>
+                  <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
+                </span>
+              </div>
             </div>
           </div>
           <div class="inbox_chat">
@@ -28,7 +26,7 @@ import State from '../components/ConnectionState.vue'
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
                   <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions 
+                  <p>Test, which is a new approach to have all solutions
                     astrology under one roof.</p>
                 </div>
               </div>
@@ -38,32 +36,35 @@ import State from '../components/ConnectionState.vue'
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
                   <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions 
+                  <p>Test, which is a new approach to have all solutions
                     astrology under one roof.</p>
                 </div>
               </div>
             </div>
-            
+
           </div>
         </div>
         <div class="mesgs">
           <div class="msg_history">
             <div class="incoming_msg">
-              <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+              <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
+              </div>
               <div class="received_msg">
                 <div class="received_withd_msg">
                   <p>Test which is a new approach to have all
                     solutions</p>
-                  <span class="time_date"> 11:01 AM    |    June 9</span></div>
+                  <span class="time_date"> 11:01 AM | June 9</span>
+                </div>
               </div>
             </div>
             <div class="outgoing_msg">
               <div class="sent_msg">
                 <p>Test which is a new approach to have all
                   solutions</p>
-                <span class="time_date"> 11:01 AM    |    June 9</span> </div>
+                <span class="time_date"> 11:01 AM | June 9</span>
+              </div>
             </div>
-            
+
           </div>
           <div class="type_msg">
             <div class="input_msg_write">
@@ -73,11 +74,11 @@ import State from '../components/ConnectionState.vue'
           </div>
         </div>
       </div>
-      
-      <p class="text-center top_spac"> Design by <a target="_blank" href="https://www.linkedin.com/in/sunil-rajput-nattho-singh/">Sunil Rajput</a></p>
-    </div></div>
+
+      <p class="text-center top_spac"> Design by <a target="_blank"
+          href="https://www.linkedin.com/in/sunil-rajput-nattho-singh/">Sunil Rajput</a></p>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-@import '../assets/chat.css';
-</style>
+<style scoped>@import '../assets/chat.css';</style>

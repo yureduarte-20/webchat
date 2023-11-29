@@ -49,11 +49,11 @@ const login = async (e: any) => {
 }
 </script>
 <template>
-    <div class="container h-100 bg-black">
+    <div class="container">
         <div class="alert alert-danger" :class="errors.has ? '' : 'd-none'" role="alert">
             {{ errors.message }}
         </div>
-        <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="row justify-content-center align-items-center min-vh-100" >
             <div class="col-6">
                 <div class="card">
                     <div class="card-body">
@@ -69,7 +69,7 @@ const login = async (e: any) => {
                             <button class="btn btn-primary w-100">Entrar</button>
                         </form>
                         <div class="card-footer">
-                            <span>Não possui um cadastro? então clique <a href="./user/create.html">aqui.</a></span>
+                            <span>Não possui um cadastro? então clique <router-link to="signup" href="./user/create.html">aqui.</router-link></span>
                         </div>
                     </div>
                 </div>

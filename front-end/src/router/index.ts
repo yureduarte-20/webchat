@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import ChatView from '../views/ChatView.vue';
+import CreateUser from '@/views/CreateUser.vue';
 import { useAuth } from '@/stores/auth';
 import { useNotification } from '@kyvg/vue3-notification';
 const router = createRouter({
@@ -11,6 +12,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: CreateUser
     },
     {
       path: '/',
