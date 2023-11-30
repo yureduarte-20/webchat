@@ -14,7 +14,7 @@ export class UserNotFoundError extends Error {
 }
 
 @injectionTarget()
-export class UserRepository implements DefaultRepository<User, number>{
+export class UserRepository implements DefaultRepository<User, typeof User.prototype.id>{
     static repositoryName: "UserRepository"
     constructor(
         @inject(ENTITY_MANAGER_BINDING_KEY)
@@ -22,7 +22,7 @@ export class UserRepository implements DefaultRepository<User, number>{
     ) {
 
     }
-    findOneOrFail(criteria: any): Promise<User> {
+    findOneOrFail(criteria: FindOneOptions<User>): Promise<User> {
         try {
             return this.entityManager.getRepository(User).findOneOrFail(criteria)
         } catch (e) {
@@ -68,6 +68,7 @@ export class UserRepository implements DefaultRepository<User, number>{
     async save(data: User): Promise<User> {
         return this.entityManager.save<User>(data)
     }
+
 
 
 }

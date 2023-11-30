@@ -1,8 +1,9 @@
-import { EntityManager, EntityNotFoundError, FindManyOptions, FindOneOptions } from "typeorm";
+import { EntityManager, EntityNotFoundError, FindManyOptions, FindOneOptions, FindOptionsWhere } from "typeorm";
 import { inject, injectionTarget } from "../core/DI";
 import { Contact } from "../entity/Contact";
 import DefaultRepository from "./DefaultRepository";
 import { ENTITY_MANAGER_BINDING_KEY } from "../core/binding-keys";
+import { User } from "../entity";
 export class ContactNotFoundError extends Error {
     constructor(msg?: string) {
         super(msg ?? "Contato não encontrado")
@@ -39,6 +40,9 @@ export default class ContactRepository implements DefaultRepository<Contact, typ
             throw e
         }
     }
+    findBy(where: FindOptionsWhere<Contact> | FindOptionsWhere<Contact>[]){
+        return this.entityManager.getRepository(Contact).findBy(where)
+    }
     find(criteria: FindManyOptions<Contact>): Promise<Contact[]> {
         return this.entityManager.getRepository(Contact).find(criteria)
     }
@@ -55,6 +59,17 @@ export default class ContactRepository implements DefaultRepository<Contact, typ
     }
     exists(criteria: FindManyOptions<Contact>): Promise<boolean> {
         return this.entityManager.getRepository(Contact).exist(criteria)
+    }
+    async findOneByUserOrDestinationUser( userId: typeof User.prototype.id, destinationUserId?: typeof User.prototype.id  ){
+        const c = await this.entityManager.getRepository(Contact)
+            .createQueryBuilder("c")
+            .where('user_id = :userId', { userId })
+            .orWhere('user_destination_id = :destinationUserId', { destinationUserId: destinationUserId ?? userId })
+            .leftJoinAndMapOne('c.userDestination', 'users', 'us', 'us.id = c.userDestination')
+            .leftJoinAndMapOne('c.user', 'users', 'uss', 'uss.id = c.user')
+            .getMany()
+            console.log(c)
+            return c
     }
 
 }

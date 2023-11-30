@@ -22,7 +22,7 @@ const showErrorMessage = (msg: string, time = 3000) => {
 const login = async (e: any) => {
   const body: any = {};
   for (const input of e.target) {
-    if (input.type != 'submit') {
+    if (input.type != 'submit') { 
       body[input.name] = input.value
     }
   }
@@ -50,9 +50,6 @@ const login = async (e: any) => {
 </script>
 <template>
     <div class="container">
-        <div class="alert alert-danger" :class="errors.has ? '' : 'd-none'" role="alert">
-            {{ errors.message }}
-        </div>
         <div class="row justify-content-center align-items-center min-vh-100" >
             <div class="col-6">
                 <div class="card">
@@ -69,7 +66,7 @@ const login = async (e: any) => {
                             <button class="btn btn-primary w-100">Entrar</button>
                         </form>
                         <div class="card-footer">
-                            <span>Não possui um cadastro? então clique <router-link to="signup" href="./user/create.html">aqui.</router-link></span>
+                            <span>Não possui um cadastro? então clique <router-link to="signup">aqui.</router-link></span>
                         </div>
                     </div>
                 </div>

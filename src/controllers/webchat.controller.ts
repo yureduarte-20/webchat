@@ -3,8 +3,11 @@ import { IEventWrapper, IListener } from "../services/Publisher";
 import { BINDING_KEY, EventManager } from "../services/EventManager";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { inject, injectionTarget } from "../core/DI";
-import { JWT_SERVICE_BINDING_KEY, SOCKET_IO_BINDING_KEY } from "../core/binding-keys";
+import { ENTITY_MANAGER_BINDING_KEY, JWT_SERVICE_BINDING_KEY, SOCKET_IO_BINDING_KEY } from "../core/binding-keys";
 import { JWTService } from "../services/JWTService";
+import { EntityManager } from "typeorm";
+import { Message } from "../entity/Message";
+import { Contact } from "../entity";
 @injectionTarget()
 export default class ChatController implements IListener {
     private connections: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>[] = [];
@@ -15,7 +18,9 @@ export default class ChatController implements IListener {
         @inject(BINDING_KEY)
         private eventManager?: EventManager,
         @inject(JWT_SERVICE_BINDING_KEY)
-        private jwtService?: JWTService
+        private jwtService?: JWTService,
+        @inject(ENTITY_MANAGER_BINDING_KEY)
+        private entityManager?: EntityManager
     ) {
         this.eventManager.subscribe({ listener: this, eventNameListener: 'connection' })
     }
@@ -55,6 +60,33 @@ export default class ChatController implements IListener {
         socket.on("disconnect", () => this.disconnect(socket));
         socket.on('chat message', (msg: any) => this.receiveMessage(socket, msg));
         socket.on('tell that i came', (msg: any) => this.handshakeBradcast(socket, msg))
+        socket.on('message:create', ({ from, content }, callback) => {
+            this.entityManager.getRepository(Contact)
+                .findOneBy({
+                    userDestination: { id: from },
+                    user: { id: socket.data.user.id }
+                }).then(async contact => {
+                    if (contact) {
+                        this.entityManager.getRepository(Message)
+                            .save({ contact, content })
+                            .then(message => {
+                                callback && callback(message.id)
+                                for (const connection of this.connections) {
+                                    if (connection.data.user.id === from) {
+                                        return connection.emit('message:created', { id: message.id, content: message.content, from:socket.data.user.id, to: from })
+                                    }
+                                }
+
+                            })
+                    }
+                })
+        })
+        socket.on('message:find', ({ from }, callback) => {
+            this.entityManager.getRepository(Message)
+                .findBy({ contact: { user: { id: socket.data.user.id }, userDestination: { id: from } } })
+                .then(d => callback && callback(d.map(message => ({ id: message.id, content: message.content, from, to: socket.data.user.id }))))
+                .catch(console.error)
+        });
     }
     handshakeBradcast(socket: Socket, msg: any) {
         this.io.emit('new user', { username: msg.username, socketId: msg.socketId })

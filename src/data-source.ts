@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
     password:'password',
     database: 'chat',
     synchronize: true,
-    logging: false,
+    logging: true,
     entities: entitiesArray,
     migrations: [],
     subscribers: [],

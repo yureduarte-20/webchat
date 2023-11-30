@@ -1,5 +1,54 @@
 <script setup lang="ts">
-
+import api from '@/services/api';
+import { useAuth } from '@/stores/auth';
+import { useConnectionStore } from '@/stores/connection';
+import { useMessagesStore } from '@/stores/messages';
+import { useNotification } from '@kyvg/vue3-notification';
+import { isAxiosError } from 'axios';
+import { onMounted, ref, watch } from 'vue';
+const { token, user } = useAuth()
+const contacts = ref<any>([])
+const { notify } = useNotification()
+const selectedContact = ref<any>(null)
+const { isConnected, connect } = useConnectionStore()
+const { listMessageFrom } = useMessagesStore()
+watch(selectedContact, () => {
+  if (!isConnected) connect();
+  if (selectedContact.value)
+    listMessageFrom(selectedContact.value.id as number)
+})
+const extractUser = (contact:any) =>{
+  console.log(contact)
+  if(contact.userDestination.id == user.id){
+    return contact.user;
+  } else {
+    return contact.userDestination
+  }
+}
+onMounted(() => {
+  api.get('/contacts', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(({ data }) => contacts.value = data)
+    .catch(e => {
+      if (isAxiosError(e)) {
+        if (e.response && e.response.data.message) {
+          return notify({
+            title: 'Erro',
+            text: e.response.data.message,
+            type: 'error'
+          })
+        }
+      }
+      notify({
+        title: 'Erro',
+        text: 'Não foi possível recuperar seus contatos',
+        type: 'error'
+      })
+    })
+})
 </script>
 <template>
   <div class="container">
@@ -21,27 +70,15 @@
             </div>
           </div>
           <div class="inbox_chat">
-            <div class="chat_list active_chat">
+            <div class="chat_list active_chat" style="cursor: pointer;" v-for="contact of contacts" :key="contact.id"
+              @click="selectedContact = contact">
               <div class="chat_people">
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
-                  <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions
-                    astrology under one roof.</p>
+                  <h5>{{ extractUser(contact).firstName }}<span class="chat_date">Dec 25</span></h5>
                 </div>
               </div>
             </div>
-            <div class="chat_list">
-              <div class="chat_people">
-                <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
-                <div class="chat_ib">
-                  <h5>Sunil Rajput <span class="chat_date">Dec 25</span></h5>
-                  <p>Test, which is a new approach to have all solutions
-                    astrology under one roof.</p>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
         <div class="mesgs">
@@ -81,4 +118,6 @@
   </div>
 </template>
 
-<style scoped>@import '../assets/chat.css';</style>
+<style scoped>
+@import '../assets/chat.css';
+</style>
