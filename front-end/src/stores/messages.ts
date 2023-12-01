@@ -1,52 +1,58 @@
 import { defineStore } from "pinia";
 import { socket } from "@/socket";
 import { useAuth } from "./auth";
+import { reactive, ref } from "vue";
 export type Message = {
     id?: number;
-    fromId: number;
     content: string;
-    toId: number;
+    userID: number;
+    contactId: number;
 }
 const exampleMessage: Message = {
-    fromId: 1,
     content: "Hello, world!",
-    toId: 2,
+    userID: 2,
+    contactId: 1
 };
 
-export const useMessagesStore = defineStore("item", {
-    state: () => ({
-        messages: [] as Message[],
-        currentUserId: 0
-    }),
-    actions: {
-        setCurrentUser(id: number) {
-            this.currentUserId = id
-        },
 
-        bindEvents() {
-            // sync the list of items upon connection
-            socket.on("connect", () => {
+export const useMessagesStore = defineStore('messages', () => {
+    const messages = ref<Message[]>([])
+    const currentContact = ref<number>()
 
-            });
-            // update the store when an item was created
-            socket.on("message:created", (item) => {
-                if (item.from == this.currentUserId)
-                    this.messages.push(item);
-                console.log(item)
-            });
-        },
-        listMessageFrom(from: typeof exampleMessage.fromId) {
-            socket.emit('message:find', { from }, (response: any) => {
-                console.log(response)
-                this.messages = response
-            })
-        },
-        createMessage(message: Message) {
-            message.id = Date.now()
-            this.messages.push(message);
-            socket.emit("message:create", { message }, (res: { data: number }) => {
-                message.id = res.data;
-            });
-        },
-    },
-});
+    function setCurrentContact(id: number) {
+        currentContact.value = id
+    } 
+
+    function bindEvents() {
+        // sync the list of items upon connection
+        socket.on("connect", () => {
+
+        });
+        // update the store when an item was created
+      /*   socket.on("message:created", (item) => {
+            if (item.contactID == currentContact)
+                messages.value.push(item)
+        }); */
+    }
+
+    function listMessageFrom(contactID: typeof exampleMessage.contactId, callback?: (messages: Message[]) => void) {
+        socket.emit('message:find', { contactID }, (response: any) => {
+            messages.value = response 
+        })
+    }
+    function createMessage(message: Message) {
+        socket.emit("message:create", message, (res: { data: number }) => {
+            message.id = res.data;
+            messages.value.push(message);
+        });
+    }
+
+    return {
+        bindEvents,
+        setCurrentContact,
+        listMessageFrom,
+        createMessage,
+        messages,
+        currentContact,
+    }
+})
