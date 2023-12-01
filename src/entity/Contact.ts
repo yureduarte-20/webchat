@@ -23,5 +23,5 @@ export class Contact {
     @UpdateDateColumn({ name: 'updated_at', type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
     updatedAt: Date;
 
-    atr:any
+    latestMessage?: Message
 }

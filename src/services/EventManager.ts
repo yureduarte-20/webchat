@@ -1,13 +1,6 @@
 import { IEventWrapper, IListener, IPublisher } from "./Publisher";
 export const BINDING_KEY = 'core.observers.event-publisher';
 export class EventManager implements IPublisher {
-    private static _instance:EventManager;
-    
-    public static getInstance(){
-        if(this._instance) return this._instance;
-        this._instance = new EventManager();
-        return this._instance
-    }
     private listeners: IEventWrapper[] = []
     subscribe(listener: IEventWrapper): void {
         if (this.listeners.find(v => v === listener)) return;

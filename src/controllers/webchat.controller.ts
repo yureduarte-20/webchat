@@ -31,7 +31,7 @@ export default class ChatController implements IListener {
             if (name == 'connection') {
                 if (!socket.handshake.auth.access_token) {
                     socket.emit("error: no token provided", { message: "Você precisa estar autenticado para acessar este recurso" })
-                    socket.disconnect(true)
+                    socket.disconnect()
                     console.log('Desconectado sem ter token')
                     return;
                 }
@@ -60,20 +60,28 @@ export default class ChatController implements IListener {
         socket.on("disconnect", () => this.disconnect(socket));
         socket.on('chat message', (msg: any) => this.receiveMessage(socket, msg));
         socket.on('tell that i came', (msg: any) => this.handshakeBradcast(socket, msg))
-        socket.on('message:create', ({ from, content }, callback) => {
+        socket.on('message:create', ({ contactId, content, userID }, callback) => {
+            console.log('criar mensagem')
+            console.table({ contactId, content, userID })
             this.entityManager.getRepository(Contact)
-                .findOneBy({
-                    userDestination: { id: from },
-                    user: { id: socket.data.user.id }
+                .findOne({
+                    where:{
+                        id: contactId
+                    },
+                    relations:{
+                        user: true,
+                        userDestination: true
+                    }
                 }).then(async contact => {
+                    console.log(contact)
                     if (contact) {
                         this.entityManager.getRepository(Message)
-                            .save({ contact, content })
+                            .save({ contact, content, user: socket.data.user.id })
                             .then(message => {
                                 callback && callback(message.id)
                                 for (const connection of this.connections) {
-                                    if (connection.data.user.id === from) {
-                                        return connection.emit('message:created', { id: message.id, content: message.content, from:socket.data.user.id, to: from })
+                                    if (connection.data.user.id != userID &&  (contact.user.id == connection.data.user.id || contact.userDestination.id == connection.data.user.id ) ) {
+                                        return connection.emit('message:created', { id: message.id, content: message.content, contactID: contact.id, userID: socket.data.user.id})
                                     }
                                 }
 
@@ -81,10 +89,10 @@ export default class ChatController implements IListener {
                     }
                 })
         })
-        socket.on('message:find', ({ from }, callback) => {
+        socket.on('message:find', ({ contactID }, callback) => {
             this.entityManager.getRepository(Message)
-                .findBy({ contact: { user: { id: socket.data.user.id }, userDestination: { id: from } } })
-                .then(d => callback && callback(d.map(message => ({ id: message.id, content: message.content, from, to: socket.data.user.id }))))
+                .findBy({ contact: { id: contactID } })
+                .then(d => callback && callback(d.map(message => ({ id: message.id, content: message.content, contactID: message.contact.id, userID: message.user.id }))))
                 .catch(console.error)
         });
     }

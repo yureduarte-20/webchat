@@ -63,12 +63,13 @@ export default class ContactRepository implements DefaultRepository<Contact, typ
     async findOneByUserOrDestinationUser( userId: typeof User.prototype.id, destinationUserId?: typeof User.prototype.id  ){
         const c = await this.entityManager.getRepository(Contact)
             .createQueryBuilder("c")
-            .where('user_id = :userId', { userId })
-            .orWhere('user_destination_id = :destinationUserId', { destinationUserId: destinationUserId ?? userId })
+            .where('c.user_id = :userId', { userId })
+            .orWhere('c.user_destination_id = :destinationUserId', { destinationUserId: destinationUserId ?? userId })
             .leftJoinAndMapOne('c.userDestination', 'users', 'us', 'us.id = c.userDestination')
             .leftJoinAndMapOne('c.user', 'users', 'uss', 'uss.id = c.user')
+            .leftJoinAndMapOne('c.latestMessage', 'c.messages', 'm', 'c.id = m.contact')
+            .orderBy('m.created_at', 'DESC')
             .getMany()
-            console.log(c)
             return c
     }
 

@@ -15,12 +15,13 @@ import { JWTService } from "../services/JWTService";
 import { AuthMiddleware } from "../middlewares/auth.middleware";
 import ContactRepository from "../repositories/ContactsRepository";
 import { ContactController } from "../controllers/contact.controller";
-const eventManager = EventManager.getInstance()
+
 
 // repository
 const run = async () =>{
     //Services
-    Container.register(BINDING_KEY, EventManager.getInstance());   
+    const eventManager = new EventManager()
+    Container.register(BINDING_KEY, eventManager);   
     Container.register(ENTITY_MANAGER_BINDING_KEY, AppDataSource.manager)
     Container.register(EXPRESS_ROUTER_BINDING_KEY, router);
     Container.register(SOCKET_IO_BINDING_KEY, io);
