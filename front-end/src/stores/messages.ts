@@ -5,12 +5,13 @@ import { reactive, ref } from "vue";
 export type Message = {
     id?: number;
     content: string;
-    userID: number;
+    userId: number;
     contactId: number;
+    createdAt?:string
 }
 const exampleMessage: Message = {
     content: "Hello, world!",
-    userID: 2,
+    userId: 2,
     contactId: 1
 };
 
@@ -35,18 +36,28 @@ export const useMessagesStore = defineStore('messages', () => {
         }); */
     }
 
-    function listMessageFrom(contactID: typeof exampleMessage.contactId, callback?: (messages: Message[]) => void) {
-        socket.emit('message:find', { contactID }, (response: any) => {
+    function listMessageFrom(contactId: typeof exampleMessage.contactId, callback?: (messages: Message[]) => void) {
+        socket.emit('message:find', { contactId }, (response: any) => {
             messages.value = response 
+            callback && callback(response)
         })
     }
-    function createMessage(message: Message) {
+    function createMessage(message: Message, callback?:(msg:Message) => void) {
         socket.emit("message:create", message, (res: { data: number }) => {
             message.id = res.data;
             messages.value.push(message);
+            callback && callback(message)
         });
     }
-
+    function messageArrived(callback: (message: Message) => void){
+        socket.on("message:created", msg =>{
+            console.log(msg)
+            if(msg.contactId == currentContact.value){
+                messages.value.push(msg)
+            }
+            callback(msg)
+        })
+    }
     return {
         bindEvents,
         setCurrentContact,
@@ -54,5 +65,6 @@ export const useMessagesStore = defineStore('messages', () => {
         createMessage,
         messages,
         currentContact,
+        messageArrived,
     }
 })

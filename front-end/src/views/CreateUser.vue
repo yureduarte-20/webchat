@@ -2,16 +2,16 @@
 import router from '@/router';
 import api from '@/services/api';
 import { useAuth } from '@/stores/auth';
+import { notify } from '@kyvg/vue3-notification';
 import { isAxiosError } from 'axios';
 import { reactive } from 'vue';
 const auth = useAuth()
 const error = reactive({ has: false, message: '' })
 const showMessage = (msg:string, time = 3000)=>{
-    const t =setTimeout(() =>{
-        error.has = true;
-        error.message = msg
-        clearTimeout(t)
-    }, time)
+    notify({
+        title: 'Error',
+        text: msg
+    })
 }
 const submit = (e: any) => {
     const body: any = {}
@@ -54,8 +54,8 @@ const submit = (e: any) => {
                         <form @submit.prevent="submit" id="registerForm">
                             <div class="input-group mb-3">
                                 <span class="input-group-text">Nome e sobrenome</span>
-                                <input type="text" name="firstName" aria-label="First name" class="form-control">
-                                <input type="text" name="lastName" aria-label="Last name" class="form-control">
+                                <input type="text" name="name" aria-label="First name" class="form-control">
+                               
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="basic-addon1">Email</span>

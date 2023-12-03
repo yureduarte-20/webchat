@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { socket } from "@/socket";
 import { useAuth } from "./auth";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { notify } from "@kyvg/vue3-notification";
 
 /* export const useConnectionStore = defineStore("connection", {
@@ -29,15 +29,15 @@ import { notify } from "@kyvg/vue3-notification";
 }); */
 
 export const useConnectionStore = defineStore("connection", () => {
-    const state = reactive({ isConnected: false })
+    const isConnected = ref<boolean>(false)
 
     function bindEvents() {
         socket.on("connect", () => {
-            state.isConnected = true;
+            isConnected.value = true;
         });
 
         socket.on("disconnect", () => {
-            state.isConnected = false;
+            isConnected.value = false;
         });
 
         socket.on("error: no token provided", () =>{
@@ -60,6 +60,6 @@ export const useConnectionStore = defineStore("connection", () => {
     return {
         connect,
         bindEvents,
-        state
+        isConnected
     }
 })
