@@ -60,9 +60,9 @@ export default class ChatController implements IListener {
         socket.on("disconnect", () => this.disconnect(socket));
         socket.on('chat message', (msg: any) => this.receiveMessage(socket, msg));
         socket.on('tell that i came', (msg: any) => this.handshakeBradcast(socket, msg))
-        socket.on('message:create', ({ contactId, content, userID }, callback) => {
+        socket.on('message:create', ({ contactId, content, userId }, callback) => {
             console.log('criar mensagem')
-            console.table({ contactId, content, userID })
+            console.table({ contactId, content, userId })
             this.entityManager.getRepository(Contact)
                 .findOne({
                     where:{
@@ -80,8 +80,8 @@ export default class ChatController implements IListener {
                             .then(message => {
                                 callback && callback(message.id)
                                 for (const connection of this.connections) {
-                                    if (connection.data.user.id != userID &&  (contact.user.id == connection.data.user.id || contact.userDestination.id == connection.data.user.id ) ) {
-                                        return connection.emit('message:created', { id: message.id, content: message.content, contactID: contact.id, userID: socket.data.user.id})
+                                    if (connection.data.user.id != userId &&  (contact.user.id == connection.data.user.id || contact.userDestination.id == connection.data.user.id ) ) {
+                                        return connection.emit('message:created', { id: message.id, content: message.content, contactId: contact.id, userId: socket.data.user.id, createdAt: message.createdAt })
                                     }
                                 }
 
@@ -89,10 +89,10 @@ export default class ChatController implements IListener {
                     }
                 })
         })
-        socket.on('message:find', ({ contactID }, callback) => {
+        socket.on('message:find', ({ contactId }, callback) => {
             this.entityManager.getRepository(Message)
-                .findBy({ contact: { id: contactID } })
-                .then(d => callback && callback(d.map(message => ({ id: message.id, content: message.content, contactID: message.contact.id, userID: message.user.id }))))
+                .findBy({ contact: { id: contactId } })
+                .then(d => callback && callback(d.map(message => ({ id: message.id, content: message.content, contactId: message.contact.id, userId: message.user.id, createdAt: message.createdAt }))))
                 .catch(console.error)
         });
     }

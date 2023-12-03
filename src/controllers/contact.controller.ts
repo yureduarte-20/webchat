@@ -43,8 +43,7 @@ export class ContactController {
         }
     }
 
-    async find(request: RequestUserProfile, response: Response) {
-        this.userRepository.find({})
+    async findMyContacts(request: RequestUserProfile, response: Response) {
         const contacts = await this.contactRepository.findOneByUserOrDestinationUser(request.user.id, request.user.id)
         return response.json(contacts)
     }

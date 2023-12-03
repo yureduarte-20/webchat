@@ -72,5 +72,6 @@ export default class ContactRepository implements DefaultRepository<Contact, typ
             .getMany()
             return c
     }
+    
 
 }

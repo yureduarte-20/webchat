@@ -16,7 +16,7 @@ import { RequestUserProfile } from "../middlewares/auth.middleware";
 export class UserController {
     constructor(
         @inject('UserRepository')
-        private userRepository?: DefaultRepository<User, number>,
+        private userRepository?: UserRepository,
         @inject(HASH_SERVICE_BINDING_KEY)
         private hashService?: HashService,
         @inject(JWT_SERVICE_BINDING_KEY)
@@ -29,8 +29,7 @@ export class UserController {
         const { body } = request;
         const user = new User()
         user.email = body.email;
-        user.firstName = body.firstName;
-        user.lastName = body.lastName
+        user.name = body.name;
         user.password = await this.hashService.generateHash(body.password);
 
         if (await this.userRepository.exists({ where: { email: body.email } })) return response.status(422).json({ message: 'este email já sendo usado' })
@@ -76,5 +75,10 @@ export class UserController {
             console.log(e)
             return response.status(404).json({ message: 'usuário não encontrado' })
         }
+    }
+    async find(request: Request, response: Response){
+        const { name, email } = request.query;
+        const contacts = await this.userRepository.findByEmailOrName(email as string, name as string);
+        return response.json(contacts)
     }
 }

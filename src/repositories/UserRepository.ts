@@ -1,5 +1,5 @@
-import { EntityManager, FindOperator, FindOneOptions, MongoRepository, MongoEntityManager, EntityNotFoundError, } from "typeorm";
-import { User } from "../entity";
+import { EntityManager, FindOperator, FindOneOptions, MongoRepository, MongoEntityManager, EntityNotFoundError, SelectQueryBuilder, } from "typeorm";
+import { Contact, User } from "../entity";
 import DefaultRepository from "./DefaultRepository";
 import { Container, inject, injectionTarget } from "../core/DI";
 
@@ -69,6 +69,12 @@ export class UserRepository implements DefaultRepository<User, typeof User.proto
         return this.entityManager.save<User>(data)
     }
 
-
+    async findByEmailOrName(email: typeof User.prototype.email, name: typeof User.prototype.name): Promise<User[]> {
+        const queryBuilder = this.entityManager.getRepository(User).createQueryBuilder();
+        return queryBuilder
+            .where('email = :email', { email })
+            .orWhere(`name LIKE CONCAT('%', :name,'%')`, { name })
+            .getMany()
+    }
 
 }
