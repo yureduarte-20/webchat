@@ -8,6 +8,7 @@ import { JWTService } from "../services/JWTService";
 import { EntityManager } from "typeorm";
 import { Message } from "../entity/Message";
 import { Contact } from "../entity";
+import ContactRepository from "../repositories/ContactsRepository";
 @injectionTarget()
 export default class ChatController implements IListener {
     private connections: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>[] = [];
@@ -20,7 +21,9 @@ export default class ChatController implements IListener {
         @inject(JWT_SERVICE_BINDING_KEY)
         private jwtService?: JWTService,
         @inject(ENTITY_MANAGER_BINDING_KEY)
-        private entityManager?: EntityManager
+        private entityManager?: EntityManager,
+        @inject("ContactRepository")
+        private contactRepository?: ContactRepository
     ) {
         this.eventManager.subscribe({ listener: this, eventNameListener: 'connection' })
     }
@@ -39,6 +42,7 @@ export default class ChatController implements IListener {
                     const user = await this.jwtService.verifyToken(socket.handshake.auth.access_token)
                     socket.data.user = user
                     this.connections.push(socket)
+                    this.onConnected(socket)
                     this.bindingEvents(socket)
                 } catch (e) {
                     socket.emit("error: token expired", { message: "Você precisa estar autenticado para acessar este recurso" })
@@ -47,28 +51,47 @@ export default class ChatController implements IListener {
             }
         }
     }
-    disconnect(socket: Socket) {
-        this.connections = this.connections.filter(s => s.id != socket.id)
-        this.io.emit("user left", { message: `${socket.data.username} se desconectou`, username: socket.data.username })
+
+    async onConnected(socket: Socket) {
+        const userId = socket.data.user.id;
+        const contacts = await this.contactRepository.findOneByUserOrDestinationUser(userId)
+        for (const con of this.connections) {
+            if (con.data.user.id !== userId) {
+                contacts.forEach(contact => {
+                    if (contact.userDestination.id === con.data.user.id || contact.user.id === con.data.user.id) {
+                        con.emit('user:online', { contactId: contact.id  })
+                        socket.emit('user:online', { contactId: contact.id })
+                    }
+                })
+            }
+        }
     }
-    receiveMessage(socket: Socket, msg: any) {
-        this.messages.push({ ...msg, socketId: socket.id })
-        this.io.emit('chat message', this.messages)
+
+    async disconnect(socket: Socket) {
+        const userId = socket.data.user.id
+        this.connections = this.connections.filter(s => s.id != socket.id)
+        const contacts = await this.contactRepository.findOneByUserOrDestinationUser(userId)
+        for(const con of this.connections){
+            if (con.data.user.id !== userId) {
+                contacts.forEach(contact => {
+                    if (contact.userDestination.id === con.data.user.id || contact.user.id === con.data.user.id) {
+                        con.emit('user:offline', { contactId: contact.id  })
+                    }
+                })
+            }
+        }
     }
     bindingEvents(socket: Socket) {
-        socket.emit('hello', { message: 'Olá', socketId: socket.id })
         socket.on("disconnect", () => this.disconnect(socket));
-        socket.on('chat message', (msg: any) => this.receiveMessage(socket, msg));
-        socket.on('tell that i came', (msg: any) => this.handshakeBradcast(socket, msg))
         socket.on('message:create', ({ contactId, content, userId }, callback) => {
             console.log('criar mensagem')
             console.table({ contactId, content, userId })
             this.entityManager.getRepository(Contact)
                 .findOne({
-                    where:{
+                    where: {
                         id: contactId
                     },
-                    relations:{
+                    relations: {
                         user: true,
                         userDestination: true
                     }
@@ -80,7 +103,7 @@ export default class ChatController implements IListener {
                             .then(message => {
                                 callback && callback(message.id)
                                 for (const connection of this.connections) {
-                                    if (connection.data.user.id != userId &&  (contact.user.id == connection.data.user.id || contact.userDestination.id == connection.data.user.id ) ) {
+                                    if (connection.data.user.id != userId && (contact.user.id == connection.data.user.id || contact.userDestination.id == connection.data.user.id)) {
                                         return connection.emit('message:created', { id: message.id, content: message.content, contactId: contact.id, userId: socket.data.user.id, createdAt: message.createdAt })
                                     }
                                 }
@@ -95,14 +118,5 @@ export default class ChatController implements IListener {
                 .then(d => callback && callback(d.map(message => ({ id: message.id, content: message.content, contactId: message.contact.id, userId: message.user.id, createdAt: message.createdAt }))))
                 .catch(console.error)
         });
-    }
-    handshakeBradcast(socket: Socket, msg: any) {
-        this.io.emit('new user', { username: msg.username, socketId: msg.socketId })
-        this.connections = this.connections.map(_socket => {
-            if (socket.id === _socket.id) {
-                _socket.data = { username: msg.username }
-            }
-            return _socket
-        })
     }
 }
