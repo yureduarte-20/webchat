@@ -40,7 +40,8 @@ export const useConnectionStore = defineStore("connection", () => {
             isConnected.value = false;
         });
 
-        socket.on("error: no token provided", () =>{
+
+        socket.on("error: no token provided", () => {
             notify({
                 title: 'Error',
                 text: 'Você não está autenticado',
@@ -51,7 +52,7 @@ export const useConnectionStore = defineStore("connection", () => {
     }
     function connect() {
         const auth = useAuth()
-        if(auth.token){
+        if (auth.token) {
             socket.auth = { access_token: auth.token, token: auth.token }
             socket.connect();
         }

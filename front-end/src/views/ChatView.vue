@@ -18,7 +18,6 @@ const selectedContact = ref<any>(null)
 const connectionStore = (useConnectionStore())
 const messageStore = useMessagesStore()
 const { currentContact, messages } = storeToRefs(messageStore)
-const searchString = ref<string>('');
 const typed_message = ref<string>('')
 const modalVisible = ref<boolean>(false)
 
@@ -97,8 +96,24 @@ const createContact = (contactEmail: string) => {
       })
     })
 }
+
+messageStore.onUserOnline(contactId => {
+  contacts.value.forEach(contact => {
+    if (contact.id == contactId) {
+      contact.isOnline = true;
+    }
+  })
+})
+
+messageStore.onUserOffline(contactId =>{
+  contacts.value.forEach(contact => {
+    if (contact.id == contactId) {
+      contact.isOnline = false;
+    }
+  })
+})
+
 onMounted(() => {
-  if (!connectionStore.isConnected) connectionStore.connect()
   if (getCurrentInstance()?.refs.msgHistory) {
     msgHistory.value = getCurrentInstance()?.refs.msgHistory
   }
@@ -111,7 +126,7 @@ onMounted(() => {
   })
     .then(async ({ data }) => {
       contacts.value = data;
-
+      if (!connectionStore.isConnected) connectionStore.connect()
 
     })
     .catch(e => {
@@ -160,7 +175,7 @@ onMounted(() => {
               <div class="chat_people">
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
-                  <h5>{{ extractUser(contact).name }}<span class="chat_date">Dec 25</span></h5>
+                  <h5>{{ extractUser(contact).name }}<span class="chat_date">{{ contact?.isOnline ? 'Online' : 'Offline' }}</span></h5>
                   <p>{{ contact.latestMessage?.content ?? '' }}</p>
                 </div>
               </div>

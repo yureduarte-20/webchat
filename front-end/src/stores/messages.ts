@@ -36,6 +36,18 @@ export const useMessagesStore = defineStore('messages', () => {
         }); */
     }
 
+    function onUserOnline(callback: (contactId: number) => void){
+        socket.on('user:online', ({ contactId }) => {
+            callback(contactId)
+        })
+    }
+
+    function onUserOffline(callback: (contactId: number) => void){
+        socket.on('user:offline', ({ contactId }) => {
+            callback(contactId)
+        })
+    }
+
     function listMessageFrom(contactId: typeof exampleMessage.contactId, callback?: (messages: Message[]) => void) {
         socket.emit('message:find', { contactId }, (response: any) => {
             messages.value = response 
@@ -66,5 +78,7 @@ export const useMessagesStore = defineStore('messages', () => {
         messages,
         currentContact,
         messageArrived,
+        onUserOffline,
+        onUserOnline
     }
 })
