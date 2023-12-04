@@ -56,6 +56,9 @@ export class UserRepository implements DefaultRepository<User, typeof User.proto
     find(filter: any): Promise<User[]> {
         return this.entityManager.find(User, filter)
     }
+    findByIdWithPassword(id: typeof User.prototype.id){
+      return this.entityManager.getRepository(User).findOne({ select:{ password: true, email: true, id: true, name: true }, where:{ id } })  
+    }
     updateById(id: number, data: Partial<User>): Promise<void> {
         this.entityManager.update<User>(User, { id }, data)
         return;

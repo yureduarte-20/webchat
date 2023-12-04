@@ -9,6 +9,7 @@ import { isAxiosError } from 'axios';
 import ModalContact from '@/components/ModalContactSearch.vue'
 import { storeToRefs } from 'pinia';
 import { nextTick, onMounted, ref, watch, getCurrentInstance, toRef } from 'vue';
+import Navbar from '@/components/Navbar.vue';
 
 const { token, user } = useAuth()
 const contacts = ref<any[]>([])
@@ -17,10 +18,10 @@ const msgHistory = ref()
 const selectedContact = ref<any>(null)
 const connectionStore = (useConnectionStore())
 const messageStore = useMessagesStore()
-const { currentContact, messages } = storeToRefs(messageStore)
+const { currentContact, messages, onlines } = storeToRefs(messageStore)
 const typed_message = ref<string>('')
 const modalVisible = ref<boolean>(false)
-
+const isSending = ref<boolean>(false)
 watch(selectedContact, async () => {
   if (!connectionStore.isConnected) connectionStore.connect()
 
@@ -29,7 +30,7 @@ watch(selectedContact, async () => {
     messageStore.setCurrentContact(selectedContact.value.id)
   }
 })
-messageStore.messageArrived(msg => {
+messageStore.messageArrived((msg : Message) => {
   if (currentContact.value === msg.contactId) {
     scrollToEnd()
   }
@@ -57,12 +58,14 @@ const extractUser = (contact: any) => {
   }
 }
 const sendMessage = () => {
-  if (currentContact.value) {
+  if (currentContact.value && !isSending.value) {
+    isSending.value = true
     messageStore.createMessage(<Message>{ contactId: currentContact.value, content: typed_message.value, userId: user.id }, msg => {
       contacts.value.forEach(c => {
         if (c.id == msg.contactId) {
           c.latestMessage = msg
         }
+        isSending.value = false
       })
       scrollToEnd()
     })
@@ -80,8 +83,8 @@ const createContact = (contactEmail: string) => {
         Authorization: `Bearer ${useAuth().token}`
       }
     })
-    .then(({ data }) => { selectedContact.value = data.id; contacts.value.push(data) })
-    .catch(e => {
+    .then(({ data } : { data:any }) => { selectedContact.value = data.id; contacts.value.push(data) })
+    .catch((e : any) => {
       if (isAxiosError(e)) {
         if (e.response?.data.message) {
           return notify({
@@ -97,7 +100,7 @@ const createContact = (contactEmail: string) => {
     })
 }
 
-messageStore.onUserOnline(contactId => {
+messageStore.onUserOnline((contactId : number) => {
   contacts.value.forEach(contact => {
     if (contact.id == contactId) {
       contact.isOnline = true;
@@ -105,7 +108,7 @@ messageStore.onUserOnline(contactId => {
   })
 })
 
-messageStore.onUserOffline(contactId =>{
+messageStore.onUserOffline((contactId : number)=>{
   contacts.value.forEach(contact => {
     if (contact.id == contactId) {
       contact.isOnline = false;
@@ -124,12 +127,12 @@ onMounted(() => {
       Authorization: `Bearer ${token}`
     }
   })
-    .then(async ({ data }) => {
+    .then(async ({ data } : {data: any}) => {
       contacts.value = data;
       if (!connectionStore.isConnected) connectionStore.connect()
 
     })
-    .catch(e => {
+    .catch((e : any) => {
       if (isAxiosError(e)) {
         if (e.response && e.response.data.message) {
           return notify({
@@ -150,6 +153,9 @@ onMounted(() => {
 
 </script>
 <template>
+  <Navbar>
+
+
   <div class="container">
     <ModalContact title="Pesquisar usuários" @update:cancel-request="modalVisible = false" :visible="modalVisible"
       @update:on-choose="v => createContact(v)" />
@@ -175,7 +181,7 @@ onMounted(() => {
               <div class="chat_people">
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
-                  <h5>{{ extractUser(contact).name }}<span class="chat_date">{{ contact?.isOnline ? 'Online' : 'Offline' }}</span></h5>
+                  <h5>{{ extractUser(contact).name }}<span class="chat_date">{{ onlines.some(item => item.contactId === contact.id) ? 'Online' : 'Offline' }}</span></h5>
                   <p>{{ contact.latestMessage?.content ?? '' }}</p>
                 </div>
               </div>
@@ -184,8 +190,8 @@ onMounted(() => {
         </div>
         <div class="mesgs">
           <div ref="msgHistory" class="msg_history">
-            <template v-for="message of messages" :key="message.id">
-              <div v-if="message.userId !== user.id" class="incoming_msg">
+            <template v-for="message of messages" >
+              <div v-if="message.userId !== user.id" :key="message.id" class="incoming_msg">
                 <div class="received_msg">
                   <div class="received_withd_msg">
                     <p>{{ message.content }}</p>
@@ -194,7 +200,7 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div v-else class="outgoing_msg">
+              <div v-else class="outgoing_msg" :key="message.id">
                 <div class="sent_msg">
                   <p>{{ message.content }}</p>
                   <span class="time_date"> {{ new Date(message.createdAt ?? Date.now()).toLocaleDateString() }}</span>
@@ -207,7 +213,7 @@ onMounted(() => {
             <div class="input_msg_write">
               <input @keydown="e => e.key === 'Enter' && sendMessage()" v-model="typed_message" type="text"
                 class="write_msg" placeholder="Type a message" />
-              <button @click.prevent="() => { console.log('As'); sendMessage() }" class="msg_send_btn" type="button"><i
+              <button :disabled=" (!selectedContact) || (isSending) " @click.prevent="() => { console.log('As'); sendMessage() }" class="msg_send_btn" type="button"><i
                   class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
             </div>
           </div>
@@ -218,6 +224,7 @@ onMounted(() => {
           href="https://www.linkedin.com/in/sunil-rajput-nattho-singh/">Sunil Rajput</a></p>
     </div>
   </div>
+</Navbar>
 </template>
 
 <style scoped>

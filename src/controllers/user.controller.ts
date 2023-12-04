@@ -49,7 +49,7 @@ export class UserController {
         }
     }
 
-    async profile(request: RequestUserProfile, response:Response){
+    async profile(request: RequestUserProfile, response: Response) {
         const profile = await this.userRepository.findById(request.user.id);
         return response.json(profile)
     }
@@ -65,20 +65,43 @@ export class UserController {
                 .setParameters({ email })
                 .getRawOne()
             if (!user) throw new Error()
-            
+
             if ((await this.hashService.compare(user.password, password))) {
                 const token = await this.jwtService.genereteToken({ email: user.email, id: user.id })
                 return response.json({ access_token: token })
-            } 
+            }
             return response.status(401).json({ message: 'Senha incorreta' })
         } catch (e) {
             console.log(e)
             return response.status(404).json({ message: 'usuário não encontrado' })
         }
     }
-    async find(request: Request, response: Response){
+    async find(request: Request, response: Response) {
         const { name, email } = request.query;
         const contacts = await this.userRepository.findByEmailOrName(email as string, name as string);
         return response.json(contacts)
+    }
+
+    async update(request: RequestUserProfile, response: Response) {
+        const { name } = request.body;
+        console
+        if (!name) return response.status(400).json({ message: 'O nome não pode ser nulo' })
+        if (typeof name !== 'string') return response.status(400).json({ message: 'O nome precisa ser um texto' })
+        if (name == '') return response.status(422).json({ message: 'O nome não pode vazio' })
+
+        const savedUser = await this.userRepository.findById(request.user.id)
+        savedUser.name = name;
+        await this.userRepository.updateById(savedUser.id, savedUser)
+        return response.status(204).send()
+    }
+    async changePassword(request: RequestUserProfile, response: Response) {
+        const { password, confirmPassword } = request.body;
+        if (!password || !confirmPassword) return response.status(400).json({ message: 'Senhas não podem estar vazias' })
+        if (typeof password !== 'string') return response.status(400).json({ message: 'Senha precisa ser um texto' })
+        if (password !== confirmPassword) return response.status(422).json({ message: 'Senhas não coincidem' })
+        const user = await this.userRepository.findByIdWithPassword(request.user.id);
+        user.password = await this.hashService.generateHash(password)
+        await this.userRepository.updateById(user.id, user)
+        return response.status(204).send()
     }
 }

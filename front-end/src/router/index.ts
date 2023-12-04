@@ -5,6 +5,7 @@ import ChatView from '../views/ChatView.vue';
 import CreateUser from '@/views/CreateUser.vue';
 import { useAuth } from '@/stores/auth';
 import { useNotification } from '@kyvg/vue3-notification';
+import Profile from '@/views/Profile.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -19,9 +20,9 @@ const router = createRouter({
       component: CreateUser
     },
     {
-      path: '/',
-      name: 'home',
-      component: HomeView,
+      path: '/profile',
+      name: 'profile',
+      component: Profile,
       meta: {
         auth: true
       }

@@ -19,7 +19,7 @@ const exampleMessage: Message = {
 export const useMessagesStore = defineStore('messages', () => {
     const messages = ref<Message[]>([])
     const currentContact = ref<number>()
-
+    const onlines = ref<{contactId:number}[]>([])
     function setCurrentContact(id: number) {
         currentContact.value = id
     } 
@@ -39,12 +39,14 @@ export const useMessagesStore = defineStore('messages', () => {
     function onUserOnline(callback: (contactId: number) => void){
         socket.on('user:online', ({ contactId }) => {
             callback(contactId)
+            onlines.value.push({ contactId })
         })
     }
 
     function onUserOffline(callback: (contactId: number) => void){
         socket.on('user:offline', ({ contactId }) => {
             callback(contactId)
+            onlines.value = onlines.value.filter(item => item.contactId !== contactId)
         })
     }
 
@@ -79,6 +81,7 @@ export const useMessagesStore = defineStore('messages', () => {
         currentContact,
         messageArrived,
         onUserOffline,
-        onUserOnline
+        onUserOnline,
+        onlines
     }
 })
