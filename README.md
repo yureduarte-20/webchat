@@ -1,7 +1,18 @@
-# Awesome Project Build with TypeORM
+# WEBchat 
 
-Steps to run this project:
+Este projeto consiste na construção de um sistema de troca de mensagens em tempo real.
+## Tecnologias utilizadas
+- Node 16
+- Typescript
+- Socket.io
+- Mysql
+- TypeORM
+- Vue3
 
-1. Run `npm i` command
-2. Setup database settings inside `data-source.ts` file
-3. Run `npm start` command
+## Rodar o projeto
+Gerar build do front,  na pasta front end rode 
+```sh
+npm run build
+```
+## Configurar o datasource do banco de dados
+Coloque as informações do banco de dados no arquivo `data-source.ts` e depois rode o comando `npm run dev`

@@ -14,17 +14,17 @@ export function bindRoutes() {
 }
 function bindUserController(router: Router, c: UserController) {
     const authMiddleware = Container.get<AuthMiddleware>(AUTH_MIDDLEWARE_BINDING_KEY);
-    router.post("/users", (req, res) => c.create(req, res))
-    router.get("/users/:id", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.findById(req, res))
-    router.patch("/users/password", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.changePassword(req as any, res))
-    router.patch("/users/:id", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.update(req as any, res))
-    router.get("/users", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.find(req, res))
-    router.get("/profile", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.profile(req as any, res))
-    router.post("/login", (req, res) => c.login(req, res))
+    router.post("/api/users", (req, res) => c.create(req, res))
+    router.get("/api/users/:id", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.findById(req, res))
+    router.patch("/api/users/password", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.changePassword(req as any, res))
+    router.patch("/api/users/:id", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.update(req as any, res))
+    router.get("/api/users", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.find(req, res))
+    router.get("/api/profile", (req, res, next) => authMiddleware.handle(req, res, next), (req, res) => c.profile(req as any, res))
+    router.post("/api/login", (req, res) => c.login(req, res))
 }
 
 function bindContactsController(router: Router, c: ContactController){
     const authMiddleware = Container.get<AuthMiddleware>(AUTH_MIDDLEWARE_BINDING_KEY);
-    router.post('/contacts', (req,res,next) => authMiddleware.handle(req,res,next), (req:any,res) => c.create(req,res))
-    router.get('/contacts', (req,res,next) => authMiddleware.handle(req,res,next), (req:any,res) => c.findMyContacts(req,res))
+    router.post('/api/contacts', (req,res,next) => authMiddleware.handle(req,res,next), (req:any,res) => c.create(req,res))
+    router.get('/api/contacts', (req,res,next) => authMiddleware.handle(req,res,next), (req:any,res) => c.findMyContacts(req,res))
 }

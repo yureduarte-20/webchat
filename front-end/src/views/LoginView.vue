@@ -36,7 +36,7 @@ const login = async (e: any) => {
       }
     })
     auth.setUser(profile)
-    router.push('chat')
+    router.push({ name: 'chat' })
   } catch (e) {
     if (isAxiosError(e)) {
       if (e.response) {
